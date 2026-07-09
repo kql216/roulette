@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ルーレット</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f4ef;
+    --panel:#ffffff;
+    --line:#e4e0d5;
+    --ink:#3a332f;
+    --ink-soft:#8a8178;
+    --ink-faint:#aca397;
+    --tiffany:#9fe3da;
+    --tiffany-deep:#4bb3a8;
+    --tiffany-ink:#2b7269;
+    --tiffany-tint:#eafbf8;
+    --radius:4px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    display:flex;
+    justify-content:center;
+    padding:56px 16px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{ width:100%; max-width:720px; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--tiffany-deep);
+    text-transform:uppercase;
+    margin:0 0 10px 1px;
+    font-weight:600;
+  }
+  h1.brand{
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-weight:700;
+    font-size:26px;
+    color:var(--ink);
+    margin:0 0 34px 1px;
+    letter-spacing:.02em;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:32px;
+  }
+  .card + .card{ margin-top:14px; }
+
+  h2.sec{
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.06em;
+    margin:0 0 20px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--line);
+    color:var(--ink);
+  }
+  h2.sec .num{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--tiffany-deep);
+    margin-right:8px;
+  }
+
+  p.lead{ color:var(--ink-soft); line-height:1.85; margin:0 0 22px; font-size:14px; font-weight:400;}
+
+  .btn{
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    border:1px solid var(--ink);
+    border-radius:2px;
+    padding:12px 22px;
+    cursor:pointer;
+    background:var(--panel);
+    color:var(--ink);
+    transition:opacity .15s ease, background .15s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    letter-spacing:.02em;
+  }
+  .btn:hover{ opacity:.75; }
+  .btn:active{ opacity:.55; }
+  .btn-primary{ background:var(--tiffany); color:#0f3d38; border:1px solid var(--tiffany); font-weight:700; }
+  .btn-primary:hover{ background:var(--tiffany-deep); border-color:var(--tiffany-deep); color:#fff; opacity:1; }
+  .btn-secondary{ background:var(--panel); color:var(--ink); border:1px solid var(--line); }
+  .btn-secondary:hover{ background:var(--bg); opacity:1; }
+  .btn:disabled{ opacity:.35; cursor:not-allowed; }
+  .btn-danger{ background:transparent; color:#a15a4a; border:1px solid #d8c9c0; padding:6px 12px; font-size:12.5px; font-weight:600;}
+  .btn-danger:hover{ background:#faf3f0; opacity:1; }
+
+  .row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .col{ flex:1; min-width:200px; }
+
+  input[type=text]{
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-size:14px;
+    padding:12px 14px;
+    border-radius:2px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    width:100%;
+    outline:none;
+  }
+  input[type=text]:focus{ border-color:var(--tiffany-deep); background:#fff; }
+  input.code-input{
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:.35em;
+    text-align:center;
+    font-size:20px;
+    text-transform:uppercase;
+    font-weight:600;
+  }
+
+  .home-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:2px; overflow:hidden;}
+  @media(max-width:560px){ .home-grid{ grid-template-columns:1fr; } }
+  .choice{ padding:26px 22px; cursor:pointer; background:var(--panel); transition:background .15s; }
+  .choice:hover{ background:var(--tiffany-tint); }
+  .choice .ttl{ font-weight:700; font-size:15px; margin-bottom:8px; color:var(--ink);}
+  .choice .sub{ font-size:12.5px; color:var(--ink-soft); line-height:1.7;}
+
+  .code-pill{
+    display:inline-flex; align-items:center; gap:12px;
+    background:var(--panel); border:1px solid var(--line);
+    padding:10px 10px 10px 18px; border-radius:2px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .code-pill span.code{ font-size:17px; letter-spacing:.28em; font-weight:700; color:var(--ink);}
+  .copy-btn{
+    background:var(--tiffany); color:#0f3d38; border:none; border-radius:2px;
+    padding:7px 14px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:'Zen Kaku Gothic New'; letter-spacing:.03em;
+  }
+  .copy-btn:hover{ background:var(--tiffany-deep); color:#fff; }
+
+  .badge{ font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:2px; letter-spacing:.02em; }
+  .badge-admin{ background:var(--ink); color:#fff; }
+  .badge-you{ background:var(--tiffany-tint); color:var(--tiffany-ink); border:1px solid var(--tiffany); }
+
+  .viewer-count{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .viewer-count .num{
+    font-family:'JetBrains Mono',monospace; font-size:26px; font-weight:700; color:var(--ink);
+  }
+  .viewer-count .txt{ font-size:13px; color:var(--ink-soft); }
+
+  ul.ilist{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:2px; overflow:hidden;}
+  ul.ilist li{
+    background:var(--panel);
+    padding:11px 14px; font-size:14px; font-weight:500;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .small-muted{ font-size:12px; color:var(--ink-soft); }
+
+  .toast-wrap{ position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; gap:8px; align-items:center;}
+  .toast{ background:var(--ink); color:#fff; padding:10px 18px; border-radius:2px; font-size:13px; animation:fadeIn .18s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+
+  .status-banner{
+    display:flex; align-items:center; gap:14px; padding:16px 18px; border-radius:2px;
+    background:var(--tiffany-tint); border:1px solid var(--tiffany); margin-bottom:14px;
+  }
+  .status-banner .dotmark{ flex-shrink:0; width:9px; height:9px; border-radius:50%; background:var(--tiffany-deep); }
+  .status-banner .txt{ font-weight:700; font-size:14px; color:var(--tiffany-ink); }
+  .status-banner .sub{ font-size:12px; color:var(--ink-soft); font-weight:500; }
+
+  .footer-link{ text-align:center; margin-top:22px; }
+  .footer-link a{ color:var(--ink-faint); font-size:12.5px; text-decoration:none; cursor:pointer; }
+  .footer-link a:hover{ color:var(--tiffany-deep); text-decoration:underline; }
+
+  .wheel-outer{ display:flex; flex-direction:column; align-items:center; gap:18px; padding:10px 0 4px; }
+  .wheel-frame{ position:relative; width:280px; height:280px; }
+  .wheel-pointer{
+    position:absolute; top:-6px; left:50%; transform:translateX(-50%);
+    width:0; height:0; z-index:5;
+    border-left:12px solid transparent; border-right:12px solid transparent;
+    border-top:20px solid var(--ink);
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,0.12));
+  }
+  .wheel-svg{ width:280px; height:280px; display:block; filter:drop-shadow(0 6px 14px rgba(120,110,150,0.18)); }
+
+  .result-reveal{ text-align:center; margin-top:24px; opacity:0; transition:opacity .5s ease; }
+  .result-reveal.show{ opacity:1; }
+  .result-reveal .lbl{ font-size:12px; color:var(--ink-soft); letter-spacing:.1em; margin-bottom:8px; }
+  .result-reveal .val{ font-size:26px; font-weight:900; color:var(--tiffany-ink); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set as fbSet, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAPkqBvpPrZBb1WYJL22KDsBm2_TflQSio",
+  authDomain: "amidakuji-95d5c.firebaseapp.com",
+  databaseURL: "https://amidakuji-95d5c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "amidakuji-95d5c",
+  storageBucket: "amidakuji-95d5c.firebasestorage.app",
+  messagingSenderId: "758466062786",
+  appId: "1:758466062786:web:4aa0c826d8920d48cdce5b"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+
+/* ---------------- storage helpers ---------------- */
+function normalizeRoom(val){
+  if(!val) return val;
+  val.viewerIds = val.viewerIds || [];
+  val.items = val.items || [];
+  return val;
+}
+async function getRoom(code){
+  try{ const snap = await get(ref(db, 'roulette-rooms/'+code)); return snap.exists() ? normalizeRoom(snap.val()) : null; }
+  catch(e){ console.error(e); return null; }
+}
+async function setRoom(code, obj){
+  try{ await fbSet(ref(db, 'roulette-rooms/'+code), obj); return true; }
+  catch(e){ console.error(e); return false; }
+}
+function getIdentity(code){
+  try{ const v = localStorage.getItem('roulette-me:'+code); return v ? JSON.parse(v) : null; }
+  catch(e){ return null; }
+}
+function setIdentity(code, obj){
+  try{ localStorage.setItem('roulette-me:'+code, JSON.stringify(obj)); return true; }
+  catch(e){ return false; }
+}
+function delIdentity(code){
+  try{ localStorage.removeItem('roulette-me:'+code); }catch(e){}
+}
+
+/* ---------------- utils ---------------- */
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function genCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s=''; for(let i=0;i<6;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function toast(msg){
+  const wrap=document.getElementById('toastWrap');
+  const d=document.createElement('div');
+  d.className='toast'; d.textContent=msg;
+  wrap.appendChild(d);
+  setTimeout(()=>{ d.style.opacity='0'; d.style.transition='opacity .3s'; setTimeout(()=>d.remove(),300); }, 1800);
+}
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+/* pastel, dreamy palette */
+const PALETTE=['#FFD3E1','#D6E8FF','#FFF3C4','#D6F5E3','#E6DBFF','#FFE2CC','#CDEFF2','#F7D9EC'];
+const LABEL_INK = '#5a4f5c';
+
+/* ---------------- app state ---------------- */
+const S = { screen:'home', code:null, myId:null, room:null };
+const app = document.getElementById('app');
+let roomRef = null, roomListener = null;
+function stopPoll(){ if(roomRef && roomListener){ off(roomRef,'value',roomListener); } roomRef=null; roomListener=null; }
+function startPoll(){
+  stopPoll();
+  if(!S.code) return;
+  roomRef = ref(db, 'roulette-rooms/'+S.code);
+  roomListener = (snapshot)=>{
+    if(!snapshot.exists()) return;
+    const fresh = normalizeRoom(snapshot.val());
+    const changed = JSON.stringify(fresh) !== JSON.stringify(S.room);
+    S.room = fresh;
+    if(changed && S.screen==='room') updateRoomDynamic();
+  };
+  onValue(roomRef, roomListener);
+}
+
+/* ---------------- wheel builder ---------------- */
+function wheelSVG(names, size){
+  const n = names.length;
+  const cx=size/2, cy=size/2, r=size/2-6;
+  const anglePer = 360/n;
+  let svg = `<svg class="wheel-svg" id="wheelSvg" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+  for(let i=0;i<n;i++){
+    const startA = i*anglePer - 90;
+    const endA = startA + anglePer;
+    const x1 = cx + r*Math.cos(startA*Math.PI/180);
+    const y1 = cy + r*Math.sin(startA*Math.PI/180);
+    const x2 = cx + r*Math.cos(endA*Math.PI/180);
+    const y2 = cy + r*Math.sin(endA*Math.PI/180);
+    const largeArc = anglePer > 180 ? 1 : 0;
+    const color = PALETTE[i % PALETTE.length];
+    svg += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${color}" stroke="#fffdf9" stroke-width="3"/>`;
+    const midA = startA + anglePer/2;
+    const labelR = r*0.62;
+    const lx = cx + labelR*Math.cos(midA*Math.PI/180);
+    const ly = cy + labelR*Math.sin(midA*Math.PI/180);
+    let rot = midA;
+    if(rot>90 && rot<270) rot += 180;
+    const fontSize = n>10 ? 10 : (n>6 ? 12 : 13);
+    svg += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-weight="700" fill="${LABEL_INK}" transform="rotate(${rot.toFixed(2)} ${lx.toFixed(2)} ${ly.toFixed(2)})">${esc(names[i])}</text>`;
+  }
+  svg += `<circle cx="${cx}" cy="${cy}" r="15" fill="#fffdf9" stroke="${LABEL_INK}" stroke-width="2"/>`;
+  svg += `</svg>`;
+  return svg;
+}
+
+/* ---------------- render: HOME ---------------- */
+function renderHome(){
+  stopPoll();
+  app.innerHTML = `
+    <div class="eyebrow">Roulette</div>
+    <h1 class="brand">ルーレット</h1>
+    <div class="card">
+      <div class="wheel-outer">
+        <div class="wheel-frame">
+          <div class="wheel-pointer"></div>
+          ${wheelSVG(['A','B','C','D','E'], 220)}
+        </div>
+      </div>
+      <p class="lead">招待コードを共有すれば、みんなで同じルーレットに参加できます。管理者が回すと、全員に同じ結果が共有されます。</p>
+      <div class="home-grid">
+        <div class="choice" id="choiceCreate">
+          <div class="ttl">新しく作る</div>
+          <div class="sub">部屋を作成し、招待コードを発行します。作成した人が管理者になります。</div>
+        </div>
+        <div class="choice" id="choiceJoin">
+          <div class="ttl">招待コードで参加する</div>
+          <div class="sub">発行されたコードを入力するだけで、閲覧者としてすぐに参加できます。</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-link small-muted" style="text-align:center;margin-top:16px;">同じ招待コードを開いた人同士で状態が同期されます</div>
+  `;
+  document.getElementById('choiceCreate').onclick = createRoom;
+  document.getElementById('choiceJoin').onclick = ()=>{ S.screen='joinCode'; renderJoinCode(); };
+}
+
+async function createRoom(){
+  const id = uid();
+  const code = genCode();
+  const room = { code, adminId:id, viewerIds:[id], items:[], started:false, resultIndex:null, resultAngle:null, itemsSnapshot:null, createdAt:Date.now() };
+  await setRoom(code, room);
+  setIdentity(code, {id});
+  S.code=code; S.myId=id; S.room=room; S.screen='room';
+  renderRoomShell(); startPoll();
+}
+
+function renderJoinCode(){
+  app.innerHTML = `
+    <div class="eyebrow">参加する</div>
+    <h1 class="brand">招待コード</h1>
+    <div class="card">
+      <p class="lead">管理者から共有された6桁の招待コードを入力してください。入力するだけで、閲覧者としてすぐに参加できます。</p>
+      <div class="row">
+        <div class="col"><input type="text" class="code-input" id="codeInput" maxlength="6" placeholder="ABC123"></div>
+        <button class="btn btn-primary" id="joinBtn">参加する</button>
+      </div>
+      <div id="joinErr" class="small-muted" style="color:#a15a4a; margin-top:10px;"></div>
+      <div class="footer-link"><a id="backHome">← ホームに戻る</a></div>
+    </div>
+  `;
+  document.getElementById('backHome').onclick = ()=>{ S.screen='home'; renderHome(); };
+  const input = document.getElementById('codeInput');
+  input.focus();
+  const submit = async ()=>{
+    const code = input.value.trim().toUpperCase();
+    if(code.length<4){ toast('コードを入力してください'); return; }
+    const room = await getRoom(code);
+    if(!room){ document.getElementById('joinErr').textContent='そのコードの部屋が見つかりませんでした。'; return; }
+    S.code = code;
+    const existing = getIdentity(code);
+    if(existing && room.viewerIds.includes(existing.id)){
+      S.myId = existing.id; S.room = room;
+    } else {
+      const id = uid();
+      room.viewerIds.push(id);
+      await setRoom(code, room);
+      setIdentity(code, {id});
+      S.myId = id; S.room = room;
+    }
+    S.screen='room'; renderRoomShell(); startPoll();
+  };
+  document.getElementById('joinBtn').onclick = submit;
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+}
+
+function renderRoomShell(){
+  const room = S.room;
+  app.innerHTML = `
+    <div class="eyebrow">部屋コード</div>
+    <div class="code-pill" style="margin-bottom:20px;">
+      <span class="code">${esc(room.code)}</span>
+      <button class="copy-btn" id="copyBtn">コピー</button>
+    </div>
+
+    <div id="statusBannerWrap"></div>
+
+    <div class="card">
+      <h2 class="sec"><span class="num">01</span>閲覧者</h2>
+      <div id="viewerCountWrap"></div>
+      <div id="leaveWrap" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec"><span class="num">02</span>ルーレットの項目</h2>
+      <ul class="ilist" id="itemList"></ul>
+      <div id="itemFormWrap" style="margin-top:12px;"></div>
+      <p class="small-muted" style="margin-top:10px;">項目を2つ以上追加すると開始できます。</p>
+    </div>
+
+    <div class="card">
+      <h2 class="sec"><span class="num">03</span>プレビュー</h2>
+      <div id="wheelPreviewWrap"></div>
+    </div>
+
+    <div class="card" id="startCardWrap"></div>
+
+    <div class="footer-link"><a id="backHome2">← ホームに戻る</a></div>
+  `;
+  document.getElementById('backHome2').onclick = ()=>{ stopPoll(); S.screen='home'; renderHome(); };
+  document.getElementById('copyBtn').onclick = async ()=>{
+    try{ await navigator.clipboard.writeText(room.code); toast('コードをコピーしました'); }
+    catch(e){ toast('コピーできませんでした。コード: '+room.code); }
+  };
+  updateRoomDynamic();
+}
+
+function updateRoomDynamic(){
+  const room = S.room;
+  if(!room) return;
+  const isAdmin = room.adminId === S.myId;
+
+  const bannerWrap = document.getElementById('statusBannerWrap');
+  if(bannerWrap){
+    if(room.started){
+      bannerWrap.innerHTML = `
+        <div class="status-banner">
+          <div class="dotmark"></div>
+          <div style="flex:1;">
+            <div class="txt">ルーレットが実行されました</div>
+            <div class="sub">下のプレビュー欄でそのまま結果を確認できます。</div>
+          </div>
+        </div>`;
+    } else {
+      bannerWrap.innerHTML='';
+    }
+  }
+
+  const vWrap = document.getElementById('viewerCountWrap');
+  if(vWrap){
+    const tag = isAdmin ? '<span class="badge badge-admin">あなたは管理者です</span>' : '<span class="badge badge-you">あなたも閲覧者です</span>';
+    vWrap.innerHTML = `
+      <div class="viewer-count">
+        <span class="num">${room.viewerIds.length}</span>
+        <span class="txt">人が閲覧中</span>
+        ${tag}
+      </div>`;
+  }
+
+  const leaveWrap = document.getElementById('leaveWrap');
+  if(leaveWrap){
+    if(!isAdmin){
+      leaveWrap.innerHTML = `<button class="btn btn-danger" id="leaveBtn">この部屋から退出する</button>`;
+      document.getElementById('leaveBtn').onclick = async ()=>{
+        const fresh = await getRoom(S.code);
+        if(fresh){
+          fresh.viewerIds = fresh.viewerIds.filter(id=>id!==S.myId);
+          await setRoom(S.code, fresh);
+        }
+        delIdentity(S.code);
+        stopPoll(); S.screen='home'; renderHome();
+      };
+    } else {
+      leaveWrap.innerHTML='';
+    }
+  }
+
+  const iList = document.getElementById('itemList');
+  if(iList){
+    iList.innerHTML = room.items.map(it=>`
+      <li>
+        <span>${esc(it.name)}</span>
+        ${isAdmin && !room.started ? `<button class="btn-danger btn" data-del="${it.id}" style="padding:4px 10px;font-size:12px;">削除</button>` : ''}
+      </li>`).join('') || '<li class="small-muted">まだ項目がありません</li>';
+    if(isAdmin && !room.started){
+      iList.querySelectorAll('[data-del]').forEach(btn=>{
+        btn.onclick = async ()=>{
+          const fresh = await getRoom(S.code);
+          fresh.items = fresh.items.filter(it=>it.id!==btn.dataset.del);
+          await setRoom(S.code, fresh);
+          S.room = fresh; updateRoomDynamic();
+        };
+      });
+    }
+  }
+  const itemFormWrap = document.getElementById('itemFormWrap');
+  if(itemFormWrap){
+    if(isAdmin && !room.started){
+      if(!itemFormWrap.dataset.built){
+        itemFormWrap.dataset.built='1';
+        itemFormWrap.innerHTML = `
+          <div class="row">
+            <div class="col"><input type="text" id="itemInput" placeholder="例）ラーメン、カレー など" maxlength="20"></div>
+            <button class="btn btn-secondary" id="addItemBtn">＋ 追加</button>
+          </div>`;
+        const inp = document.getElementById('itemInput');
+        const addItem = async ()=>{
+          const name = inp.value.trim();
+          if(!name) return;
+          const fresh = await getRoom(S.code);
+          fresh.items.push({id:uid(), name});
+          await setRoom(S.code, fresh);
+          S.room = fresh; inp.value='';
+          updateRoomDynamic();
+          document.getElementById('itemInput').focus();
+        };
+        document.getElementById('addItemBtn').onclick = addItem;
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter') addItem(); });
+      }
+    } else if(!isAdmin) {
+      itemFormWrap.innerHTML = `<p class="small-muted">項目の追加・削除は管理者のみ行えます。</p>`;
+      itemFormWrap.dataset.built='';
+    } else {
+      itemFormWrap.innerHTML='';
+      itemFormWrap.dataset.built='';
+    }
+  }
+
+  const previewWrap = document.getElementById('wheelPreviewWrap');
+  if(previewWrap){
+    if(room.items.length < 2 && !room.started){
+      previewWrap.innerHTML = `<p class="small-muted">項目を2つ以上追加すると、ここにルーレットが表示されます。</p>`;
+      previewWrap.dataset.mode = '';
+    } else {
+      const names = room.started ? (room.itemsSnapshot || []) : room.items.map(it=>it.name);
+      const key = room.started ? ('started:'+room.resultAngle) : ('editing:'+names.join('|'));
+      if(previewWrap.dataset.mode !== key){
+        previewWrap.dataset.mode = key;
+        previewWrap.innerHTML = `
+          <div class="wheel-outer">
+            <div class="wheel-frame">
+              <div class="wheel-pointer"></div>
+              ${wheelSVG(names, 240)}
+            </div>
+            <div class="result-reveal" id="resultReveal">
+              <div class="lbl">RESULT</div>
+              <div class="val" id="resultVal"></div>
+            </div>
+          </div>`;
+        if(room.started){
+          const svg = document.getElementById('wheelSvg');
+          svg.style.transition = 'transform 3.4s cubic-bezier(0.12,0.68,0.15,1)';
+          svg.style.transform = 'rotate(0deg)';
+          requestAnimationFrame(()=>requestAnimationFrame(()=>{
+            svg.style.transform = `rotate(${room.resultAngle}deg)`;
+          }));
+          document.getElementById('resultVal').textContent = names[room.resultIndex] || '?';
+          setTimeout(()=>{
+            const rr = document.getElementById('resultReveal');
+            if(rr) rr.classList.add('show');
+          }, 3500);
+        }
+      }
+    }
+  }
+
+  const startWrap = document.getElementById('startCardWrap');
+  if(startWrap){
+    if(room.started){
+      if(isAdmin){
+        startWrap.innerHTML = `
+          <h2 class="sec"><span class="num">04</span>開始</h2>
+          <p class="lead">このルーレットはすでに回答済みです。項目を変えてもう一度行いたい場合はリセットできます。</p>
+          <button class="btn btn-secondary" id="resetBtn">もう一度やり直す準備をする</button>`;
+        const rb = document.getElementById('resetBtn');
+        if(rb) rb.onclick = async ()=>{
+          const fresh = await getRoom(S.code);
+          fresh.started=false; fresh.resultIndex=null; fresh.resultAngle=null; fresh.itemsSnapshot=null;
+          await setRoom(S.code, fresh);
+          S.room = fresh; updateRoomDynamic();
+        };
+      } else {
+        startWrap.innerHTML='';
+      }
+    } else if(isAdmin){
+      const okCount = room.items.length>=2;
+      startWrap.innerHTML = `
+        <h2 class="sec"><span class="num">04</span>開始</h2>
+        <p class="lead">項目 <b>${room.items.length}件</b>
+          ${okCount ? '' : '<br><span style="color:#a15a4a;font-weight:700;">※ 項目を2つ以上追加してください</span>'}
+        </p>
+        <button class="btn btn-primary" id="startBtn" ${okCount?'':'disabled'}>ルーレットを開始する</button>
+      `;
+      const sb = document.getElementById('startBtn');
+      if(sb) sb.onclick = async ()=>{
+        const fresh = await getRoom(S.code);
+        if(fresh.items.length<2){ toast('項目を2つ以上追加してください'); S.room=fresh; updateRoomDynamic(); return; }
+        const n = fresh.items.length;
+        const idx = Math.floor(Math.random()*n);
+        const anglePer = 360/n;
+        const midDraw0 = idx*anglePer + anglePer/2;
+        const jitter = (Math.random()-0.5) * Math.max(anglePer-8, 4);
+        const resultAngle = 1800 - midDraw0 - jitter;
+        fresh.started = true;
+        fresh.resultIndex = idx;
+        fresh.resultAngle = resultAngle;
+        fresh.itemsSnapshot = fresh.items.map(it=>it.name);
+        await setRoom(S.code, fresh);
+        S.room = fresh; updateRoomDynamic();
+      };
+    } else {
+      startWrap.innerHTML = `
+        <h2 class="sec"><span class="num">04</span>開始</h2>
+        <p class="lead">管理者がルーレットを開始するのをお待ちください。</p>`;
+    }
+  }
+}
+
+renderHome();
+</script>
+</body>
+</html>
